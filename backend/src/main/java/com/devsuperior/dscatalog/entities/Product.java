@@ -5,14 +5,13 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -27,8 +26,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "tb_category")
-public class Category {
+@Table(name = "tb_product")
+public class Product {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,22 +35,19 @@ public class Category {
 
   private String name;
 
-  @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
-  private Instant createdAt;
+  @Column(columnDefinition = "TEXT")
+  private String description;
+
+  private Double price;
+  private String imgUrl;
 
   @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
-  private Instant updatedAt;
+  private Instant date;
 
-  @ManyToMany(mappedBy = "categories")
-  Set<Product> products = new HashSet<>();
-
-  @PrePersist
-  public void prePersist() {
-    createdAt = Instant.now();
-  }
-
-  @PreUpdate
-  public void preUpdate() {
-    updatedAt = Instant.now();
-  }
+  @ManyToMany
+  @JoinTable(
+      name = "tb_product_category",
+      joinColumns = @JoinColumn(name = "product_id"),
+      inverseJoinColumns = @JoinColumn(name = "category_id"))
+  Set<Category> categories = new HashSet<>();
 }
