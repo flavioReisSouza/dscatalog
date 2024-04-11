@@ -53,6 +53,7 @@ class ProductServiceTest {
     existingId = 1L;
     nonExistingId = 2L;
     dependentId = 3L;
+
     Product product = Factory.createProduct();
     Category category = Factory.createCategory();
     PageImpl<Product> page = new PageImpl<>(List.of(product));
@@ -62,10 +63,14 @@ class ProductServiceTest {
     when(repository.existsById(existingId)).thenReturn(true);
     when(repository.existsById(nonExistingId)).thenReturn(false);
     when(repository.existsById(dependentId)).thenReturn(true);
+
     when(repository.findAll(any(Pageable.class))).thenReturn(page);
+
     when(repository.save(any())).thenReturn(product);
+
     when(repository.findById(existingId)).thenReturn(Optional.of(product));
     when(repository.findById(nonExistingId)).thenReturn(Optional.empty());
+
     when(repository.getReferenceById(existingId)).thenReturn(product);
     when(categoryRepository.getReferenceById(existingId)).thenReturn(category);
     when(repository.getReferenceById(nonExistingId)).thenThrow(ResourceNotFoundException.class);

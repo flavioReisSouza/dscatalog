@@ -26,6 +26,7 @@ public class Factory {
   }
 
   public static Category createCategory() {
+    Category category = new Category();
     return new Category(2L, "Electronics", Instant.now(), Instant.now());
   }
 }
