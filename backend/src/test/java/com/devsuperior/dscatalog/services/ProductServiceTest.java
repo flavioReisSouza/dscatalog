@@ -1,6 +1,7 @@
 package com.devsuperior.dscatalog.services;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -135,10 +136,15 @@ class ProductServiceTest {
   }
 
   @Test
-  @DisplayName("Update should throw ResourceNotFoundException when id does not exist")
-  void updateShouldThrowResourceNotFoundExceptionWhenIdDoesNotExist() {
+  @DisplayName("Create should call save method of ProductRepository when ProductDTO is valid")
+  void createShouldCallSaveMethodOfProductRepositoryWhenProductDTOIsValid() {
     ProductDTO dto = Factory.createProductDTO();
+    ProductDTO result = service.create(dto);
 
-    assertThrows(ResourceNotFoundException.class, () -> service.update(nonExistingId, dto));
+    verify(repository, times(1)).save(any(Product.class));
+
+    assertEquals(dto.getName(), result.getName());
+    assertEquals(dto.getDescription(), result.getDescription());
+    assertEquals(dto.getPrice(), result.getPrice());
   }
 }

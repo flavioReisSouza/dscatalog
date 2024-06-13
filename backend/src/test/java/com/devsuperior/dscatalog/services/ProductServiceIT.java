@@ -2,10 +2,12 @@ package com.devsuperior.dscatalog.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.devsuperior.dscatalog.dto.ProductDTO;
+import com.devsuperior.dscatalog.entities.Product;
 import com.devsuperior.dscatalog.repositories.ProductRepository;
 import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +30,7 @@ class ProductServiceIT {
   private Long existingId;
   private Long nonExistingId;
   private Long countTotalProducts;
+  private ProductDTO productDTO;
 
   @BeforeEach
   void setUp() throws Exception {
@@ -35,6 +38,11 @@ class ProductServiceIT {
     existingId = 1L;
     nonExistingId = 1000L;
     countTotalProducts = 25L;
+
+    productDTO = new ProductDTO();
+    productDTO.setName("PS3 Tuned");
+    productDTO.setDescription("PS3 with retro games");
+    productDTO.setPrice(1000.0);
   }
 
   @Test
@@ -89,5 +97,18 @@ class ProductServiceIT {
     assertEquals("Macbook Pro", result.getContent().get(0).getName());
     assertEquals("PC Gamer", result.getContent().get(1).getName());
     assertEquals("PC Gamer Alfa", result.getContent().get(2).getName());
+  }
+
+  @Test
+  void createShouldPersistDataWhenValidData() {
+    ProductDTO result = service.create(productDTO);
+
+    assertNotNull(result.getId());
+    assertEquals(productDTO.getName(), result.getName());
+    assertEquals(productDTO.getDescription(), result.getDescription());
+    assertEquals(productDTO.getPrice(), result.getPrice());
+
+    Product persistedProduct = repository.findById(result.getId()).orElse(null);
+    assertNotNull(persistedProduct);
   }
 }
