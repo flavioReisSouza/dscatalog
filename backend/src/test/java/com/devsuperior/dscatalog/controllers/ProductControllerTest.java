@@ -2,8 +2,12 @@ package com.devsuperior.dscatalog.controllers;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -56,8 +60,13 @@ class ProductControllerTest {
     when(service.findById(existingId)).thenReturn(productDTO);
     when(service.findById(nonExistingId)).thenThrow(ResourceNotFoundException.class);
 
+    when(service.create(any())).thenReturn(productDTO);
+
     when(service.update(eq(existingId), any())).thenReturn(productDTO);
     when(service.update(eq(nonExistingId), any())).thenThrow(ResourceNotFoundException.class);
+
+    doNothing().when(service).delete(existingId);
+    doThrow(ResourceNotFoundException.class).when(service).delete(nonExistingId);
   }
 
   @Test
@@ -117,6 +126,44 @@ class ProductControllerTest {
             put("/products/{id}", nonExistingId)
                 .content(jsonBody)
                 .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON));
+
+    result.andExpect(status().isNotFound());
+  }
+
+  @Test
+  @DisplayName("Create should return status 201 when ProductDTO is valid")
+  void createShouldReturnStatus201WhenProductDTOIsValid() throws Exception {
+    String jsonBody = objectMapper.writeValueAsString(productDTO);
+
+    ResultActions result =
+        mockMvc.perform(
+            post("/products")
+                .content(jsonBody)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON));
+
+    result.andExpect(status().isCreated());
+    result.andExpect(jsonPath("$.id").value(productDTO.getId()));
+    result.andExpect(jsonPath("$.name").value(productDTO.getName()));
+    result.andExpect(jsonPath("$.description").value(productDTO.getDescription()));
+  }
+
+  @Test
+  @DisplayName("Delete should return No Content 204 when id exists")
+  void deleteShouldReturnNoContent204WhenIdExists() throws Exception {
+    ResultActions result =
+        mockMvc.perform(delete("/products/{id}", existingId)
+                .accept(MediaType.APPLICATION_JSON));
+
+    result.andExpect(status().isNoContent());
+  }
+
+  @Test
+  @DisplayName("Delete should return Not Found 404 when id does not exists")
+  void deleteShouldReturnNotFound404WhenIdDoesNotExists() throws Exception {
+    ResultActions result =
+        mockMvc.perform(delete("/products/{id}", nonExistingId)
                 .accept(MediaType.APPLICATION_JSON));
 
     result.andExpect(status().isNotFound());
